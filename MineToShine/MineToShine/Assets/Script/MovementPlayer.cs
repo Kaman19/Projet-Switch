@@ -6,6 +6,9 @@ using UnityEngine.Experimental.Rendering.Universal;
 public class MovementPlayer : MonoBehaviour
 {
 
+
+    
+
     Light2D lt;
 
     public float moveSpeed, jumpForce;
@@ -19,7 +22,7 @@ public class MovementPlayer : MonoBehaviour
     public float groundCkeckRadius;
 
     public float radiusLight;
-    public LayerMask collisionLightLayer;
+    public LayerMask collisionPlayerLightLayer;
 
     float horizontalMovement;
 
@@ -28,7 +31,19 @@ public class MovementPlayer : MonoBehaviour
     Rigidbody2D rb;
     Animator anim;
 
-    bool isAlight = true;
+    public bool isAlight = true;
+
+    public GameObject spotPrefab;
+
+    public float rangePosLight = 1f;
+
+
+
+    public int nbSpot = 3;
+
+
+
+    public Lumiere.eLumiereType typeLum = Lumiere.eLumiereType.rouge;
    
 
     Vector3 velocity = Vector3.zero;
@@ -36,11 +51,13 @@ public class MovementPlayer : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+
         lt = GetComponentInChildren<Light2D>();
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
 
         // lt.color = Color.blue;
+
 
         lt.pointLightOuterRadius = radiusLight;
         lt.pointLightInnerRadius = radiusLight / 2;
@@ -51,56 +68,19 @@ public class MovementPlayer : MonoBehaviour
     void Update()
     {
 
-        if (Input.GetKeyDown(KeyCode.P))
+        if (Input.GetKeyDown(KeyCode.F))
         {
             isAlight = !isAlight;
 
         }
 
+        ChangerLumiere();
 
-        if (isAlight)
-		{
+        PosserLumiere();
 
-            lt.enabled = true;
-            float move = Input.GetAxis("Horizontal");
+        ReprendreLumiere();
 
-
-            horizontalMovement = move * moveSpeed * Time.fixedDeltaTime;
-
-
-            isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCkeckRadius, collisionLayer);
-
-            if (Input.GetButtonDown("Jump") && isGrounded)
-            {
-                isJumping = true;
-            }
-
-
-            if (move > 0 && !lookRight)
-            {
-                Flip();
-
-            }
-            else if (move < 0 && lookRight)
-            {
-                Flip();
-            }
-
-
-           
-
-            Collider2D[] hit = Physics2D.OverlapCircleAll(transform.position, radiusLight,collisionLightLayer);
-            for (int i = 0; i < hit.Length; i++)
-            {
-                Debug.Log(hit[i].name);
-                hit[i].GetComponent<TraverserObject>().isTurnning = true;
-            }
-        }
-
-        if(!isAlight)
-		{
-            lt.enabled = false;
-		}
+        LumiereIsTurn();
        
     }
 
@@ -131,6 +111,115 @@ public class MovementPlayer : MonoBehaviour
         transform.localScale = theScale;
 	}
 
+    void PosserLumiere()
+	{
+        if (Input.GetKeyDown(KeyCode.Mouse0) && nbSpot>0)
+        {
+            Vector3 posM;
+            posM = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            posM.z = 0f;
+
+            Vector3 dir;
+            dir = posM - transform.position;
+            dir = dir.normalized * rangePosLight;
+            Vector3 posL = new Vector3(dir.x + transform.position.x, dir.y + transform.position.y);
+
+            GameObject sp = Instantiate(spotPrefab, posL, Quaternion.identity);
+            sp.name = "spot" + nbSpot;
+            sp.GetComponent<Lumiere>().typeLumiere = typeLum;
+
+
+            nbSpot--;
+
+            
+
+
+
+        }
+    }
+
+    void ChangerLumiere()
+	{
+        if(Input.GetKeyDown(KeyCode.E))
+		{
+            typeLum++;
+
+            
+
+            if((int)typeLum>2)
+			{
+                typeLum = Lumiere.eLumiereType.rouge;
+			}
+		}
+
+        if(Input.GetKeyDown(KeyCode.A))
+		{
+            typeLum--;
+
+            if ((int)typeLum<0)
+            {
+                typeLum = Lumiere.eLumiereType.bleu;
+            }
+        }
+	}
+
+    void ReprendreLumiere()
+	{
+
+		if (Input.GetKeyDown(KeyCode.Mouse1))
+		{
+			Collider2D[] hit = Physics2D.OverlapCircleAll(transform.position, rangePosLight, collisionPlayerLightLayer);
+			for (int i = 0; i < hit.Length; i++)
+			{
+
+
+				Destroy(hit[i].gameObject);
+				nbSpot++;
+			}
+		}
+
+	}
+
+	void LumiereIsTurn()
+	{
+        if (!isAlight)
+        {
+
+            lt.enabled = false;
+            float move = Input.GetAxis("Horizontal");
+
+
+            horizontalMovement = move * moveSpeed * Time.fixedDeltaTime;
+
+
+            isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCkeckRadius, collisionLayer);
+
+            if (Input.GetButtonDown("Jump") && isGrounded)
+            {
+                isJumping = true;
+            }
+
+
+            if (move > 0 && !lookRight)
+            {
+                Flip();
+
+            }
+            else if (move < 0 && lookRight)
+            {
+                Flip();
+            }
+
+        }
+
+        if (isAlight)
+        {
+            horizontalMovement = 0;
+
+            lt.enabled = true;
+        }
+    }
+
 	private void OnDrawGizmos()
 	{
         Gizmos.color = Color.red;
@@ -138,7 +227,10 @@ public class MovementPlayer : MonoBehaviour
 
         Gizmos.color = Color.blue;
         Gizmos.DrawWireSphere(transform.position, radiusLight);
-	}
+
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, rangePosLight);
+    }
 
 
 }
