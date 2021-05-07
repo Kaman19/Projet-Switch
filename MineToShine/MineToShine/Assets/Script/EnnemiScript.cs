@@ -17,9 +17,13 @@ public class EnnemiScript : MonoBehaviour
 
     float rangeLight = 5f;
 
-   
+
+    bool lookRight = false;
+
 
     SpriteRenderer spR;
+
+    Animator anim;
 
     // Start is called before the first frame update
     void Start()
@@ -29,20 +33,22 @@ public class EnnemiScript : MonoBehaviour
 
         spR = GetComponent<SpriteRenderer>();
 
-        if(lumiereType==Lumiere.eLumiereType.rouge)
-		{
-            spR.color = Color.red;
-        }
+        anim = GetComponent<Animator>();
 
-        if (lumiereType == Lumiere.eLumiereType.vert)
-        {
-            spR.color = Color.green;
-        }
+  //      if (lumiereType==Lumiere.eLumiereType.rouge)
+		//{
+  //          spR.color = Color.red;
+  //      }
 
-        if (lumiereType == Lumiere.eLumiereType.bleu)
-        {
-            spR.color = Color.blue;
-        }
+  //      if (lumiereType == Lumiere.eLumiereType.vert)
+  //      {
+  //          spR.color = Color.green;
+  //      }
+
+  //      if (lumiereType == Lumiere.eLumiereType.bleu)
+  //      {
+  //          spR.color = Color.blue;
+  //      }
 
     }
 
@@ -63,10 +69,27 @@ public class EnnemiScript : MonoBehaviour
         if((m_player.isAlight || nbLumiere.Length>0) && canMove)
 		{
             Vector3 dir = m_player.transform.position - transform.position;
+            Debug.Log(dir);
+
+
 
             transform.position += dir.normalized * moveSpeed * Time.deltaTime;
+
+
+            if (dir.x > 0 && !lookRight)
+            {
+                Flip();
+
+            }
+            else if (dir.x < 0 && lookRight)
+            {
+                Flip();
+            }
         }
-       
+
+
+
+        anim.SetBool("Move", canMove);
 
     }
 
@@ -74,6 +97,14 @@ public class EnnemiScript : MonoBehaviour
     {
         rangeLight = GameObject.Find(name).GetComponent<Lumiere>().radiusLight;
         tLumiere = GameObject.Find(name).transform;
+    }
+
+    void Flip()
+    {
+        lookRight = !lookRight;
+        Vector3 theScale = transform.localScale;
+        theScale.x *= -1;
+        transform.localScale = theScale;
     }
 
 }

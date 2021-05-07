@@ -68,6 +68,7 @@ public class Lumiere : MonoBehaviour
                 if ((int)hit[i].GetComponent<TraverserObject>().typeCouleur == (int)typeLumiere)
                 {
                     hit[i].GetComponent<TraverserObject>().isTurnning = true;
+                    hit[i].GetComponent<ShadowCaster2D>().castsShadows = false;
                     hit[i].GetComponent<TraverserObject>().ToucherLumiere(gameObject.name);
 
                 }

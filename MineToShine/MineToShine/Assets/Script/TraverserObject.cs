@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-//using UnityEngine.Experimental.Rendering.Universal;
+using UnityEngine.Experimental.Rendering.Universal;
 
 public class TraverserObject : MonoBehaviour
 {
@@ -24,7 +24,7 @@ public class TraverserObject : MonoBehaviour
 
     Transform tLumiere;
 
-
+    ShadowCaster2D shC;
 
 
     BoxCollider2D col;
@@ -36,6 +36,7 @@ public class TraverserObject : MonoBehaviour
     {
         col = GetComponent<BoxCollider2D>();
         spR = GetComponent<SpriteRenderer>();
+        shC = GetComponent<ShadowCaster2D>();
 
         //rangeLight = FindObjectOfType<Lumiere>().radiusLight;
 
@@ -55,8 +56,8 @@ public class TraverserObject : MonoBehaviour
             spR.color = Color.blue;
 		}
 
-       
-        
+
+        Debug.Log(spR.bounds.size);
     }
 
     // Update is called once per frame
@@ -64,14 +65,14 @@ public class TraverserObject : MonoBehaviour
     {
         if(lightOn && tLumiere!=null)
 		{
-            dis = (transform.position.x + spR.bounds.size.x / 2) - tLumiere.position.x;
-
-            //Debug.Log(Mathf.Abs(dis));
+            dis = ((transform.position.x - tLumiere.position.x)-spR.bounds.size.x/2);
+            Debug.Log(Mathf.Abs(dis));
 
             if (Mathf.Abs(dis) > rangeLight)
             {
                 isTurnning = false;
                 lightOn = false;
+                shC.castsShadows = true;
             }
         }
         else
@@ -79,6 +80,7 @@ public class TraverserObject : MonoBehaviour
             isTurnning = false;
             lightOn = false;
             col.isTrigger = false;
+            shC.castsShadows = true;
         }
 
 
@@ -103,5 +105,5 @@ public class TraverserObject : MonoBehaviour
         tLumiere = GameObject.Find(name).transform;
     }
 
-    //comparer la distance de entre l'objet et le joueur, si supérieur au radius le désactiver. Changer la transparence en fonction de la distance entre les deux
+    
 }
